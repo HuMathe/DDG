@@ -25,7 +25,7 @@ DDG_OPENGL_LIBS       = -lglut -lGL -lGLU -lX11
 
 ########################################################################################
 
-TARGET = hot2 
+TARGET = flatten 
 CC = g++
 LD = g++
 CFLAGS = -O3 -Wall -Werror -ansi -pedantic  $(DDG_INCLUDE_PATH) -I./include -I./src -DGL_GLEXT_PROTOTYPES 
