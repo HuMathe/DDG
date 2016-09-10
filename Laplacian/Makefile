@@ -10,7 +10,7 @@
 # DDG_OPENGL_LIBS       = -framework OpenGL -framework GLUT
 
 # Linux
-DDG_INCLUDE_PATH      =
+DDG_INCLUDE_PATH      = -I/usr/local/include
 DDG_LIBRARY_PATH      =
 DDG_BLAS_LIBS         = -llapack -lblas -lgfortran -lumfpack
 DDG_SUITESPARSE_LIBS  = -lspqr -lcholmod -lmetis -lcolamd -lccolamd -lcamd -lamd -lm
@@ -28,7 +28,7 @@ DDG_OPENGL_LIBS       = -lglut -lGL -lGLU -lX11
 TARGET = laplacian 
 CC = g++
 LD = g++
-CFLAGS = -O3 -Wall -Werror -ansi -pedantic  $(DDG_INCLUDE_PATH) -I./include -I./src -DGL_GLEXT_PROTOTYPES 
+CFLAGS = -O3 -Wall -Werror -ansi -pedantic  $(DDG_INCLUDE_PATH) -I./include -I./src -DGL_GLEXT_PROTOTYPES
 LFLAGS = -O3 -Wall -Werror -ansi -pedantic $(DDG_LIBRARY_PATH)
 LIBS = $(DDG_OPENGL_LIBS) $(DDG_SUITESPARSE_LIBS) $(DDG_BLAS_LIBS)
 

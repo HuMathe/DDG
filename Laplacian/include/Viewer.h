@@ -42,6 +42,7 @@ namespace DDG
       static void view( int value );
       
       // menu functions
+      static void mPrepare( void );
       static void mProcess( void );
       static void mResetMesh( void );
       static void mWriteMesh( void );

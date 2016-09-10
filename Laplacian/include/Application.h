@@ -1,14 +1,15 @@
 #ifndef DDG_APPLICATION_H
 #define DDG_APPLICATION_H
 
+#include "Types.h"
+#include "Vector.h"
+#include "Mesh.h"
+
 namespace DDG
 {
-   class Application
-   {
-	  //
-      // TODO: add your code here!!!
-   	  //
-   };
+    void calcPotentialColor(Mesh &mesh);
+
+    void randomAssignRho(Mesh &mesh);
 }
 
 #endif

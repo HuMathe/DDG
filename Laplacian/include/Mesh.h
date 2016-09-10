@@ -51,6 +51,11 @@
 #include "Face.h"
 #include "SparseMatrix.h"
 
+#include <Eigen/Sparse>
+#include <Eigen/CholmodSupport>
+typedef Eigen::SparseMatrix<double> spMat;
+typedef Eigen::SimplicialLDLT<spMat> cholSolver;
+
 namespace DDG
 {
    class Mesh
@@ -92,8 +97,20 @@ namespace DDG
       std::vector<Face>     boundaries;
       // storage for mesh elements
       
+      /* build laplacian matrix of the mesh */
+      void buildLaplacian( void );
+
+      /* solve the scalar poisson problem on mesh */
+      void solveScalarPoissonProblem( void );
+      
    protected:
       std::string inputFilename;
+
+      spMat Laplacian;
+      // Laplacian sprase matrix of the mesh
+
+      cholSolver LapSolver;
+      // cholmode solver based on SuiteSparse
       
       void indexElements( void );
       // assigns a unique, 0-based index to each mesh element

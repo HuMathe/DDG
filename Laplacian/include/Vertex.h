@@ -24,13 +24,19 @@ namespace DDG
       Vector position;
       // location of vertex in Euclidean 3-space
       
+      Vector color;
+      // color of vertex
+      
       int index;
       // unique integer ID in the range 0, ..., nVertices-1
+      
+      double rho, phi;
+      // the property assigned to each vertex
       
       bool tag;
       // true if vertex is selected by the user; false otherwise
 
-      Vertex() : index(0), tag(false) { }
+      Vertex() : color(Vector(0.0,0.0,0.0)), index(0), rho(0.0), phi(0.0), tag(false) { }
       
       double area( void ) const;
       // returns the barycentric area associated with this vertex

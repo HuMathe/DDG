@@ -135,6 +135,9 @@ namespace DDG
          case ' ':
             mProcess();
             break;
+         case 'n':
+            mPrepare();
+            break;
          case 27:
             mExit();
             break;
@@ -208,9 +211,18 @@ namespace DDG
       in >> windowSize[1];
    }
 
+   void Viewer :: mPrepare( void )
+   {
+      randomAssignRho(mesh);
+      calcPotentialColor(mesh);
+      mesh.buildLaplacian();
+      updateDisplayList();
+   }
+
    void Viewer :: mProcess( void )
    {
-      // TODO: call Application here!
+      mesh.solveScalarPoissonProblem();
+      calcPotentialColor(mesh);
       updateDisplayList();
    }
    
@@ -405,6 +417,9 @@ namespace DDG
                glNormal3dv( &N[0] );
             }
             
+            // surface potential
+            glColor3dv( &he->vertex->color[0] );
+
             glVertex3dv( &he->vertex->position[0] );
             
             he = he->next;
