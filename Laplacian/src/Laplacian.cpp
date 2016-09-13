@@ -46,8 +46,8 @@ namespace DDG
          * */
 
         /* construct solver */
-        this->LapSolver.compute(Laplacian);
-        if (LapSolver.info() != Eigen::Success)
+        this->negLapSolver.compute( -Laplacian );
+        if (negLapSolver.info() != Eigen::Success)
         {
             printf("fail to construct solver.\n");
         }
@@ -73,9 +73,10 @@ namespace DDG
        printf("normed rho: max: %f, min: %f\n", rho.maxCoeff(), rho.minCoeff());
 
        /* solve for 2-form of d*d rho */
-       phi = LapSolver.solve( (rho.array() * A.array()).matrix());
+       Vec hodgeRho = rho.array() * A.array();
+       phi = - negLapSolver.solve( hodgeRho );
 
-       if (LapSolver.info() != Eigen::Success)
+       if (negLapSolver.info() != Eigen::Success)
        {
            printf("fail to solve equation.\n");
            return;

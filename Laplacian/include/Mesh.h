@@ -54,7 +54,18 @@
 #include <Eigen/Sparse>
 #include <Eigen/CholmodSupport>
 typedef Eigen::SparseMatrix<double> spMat;
-typedef Eigen::SimplicialLDLT<spMat> cholSolver;
+
+#define _CHOL_TYPE_ 1
+
+#if _CHOL_TYPE_ == 1
+typedef Eigen::SparseLU<spMat> cholSolver;
+#elif _CHOL_TYPE_ == 2
+typedef Eigen::SimplicialCholeskyLLT<spMat> cholSolver;
+#elif _CHOL_TYPE_ == 3
+typedef Eigen::CholmodSimplicialLLT<spMat> cholSolver;
+#elif _CHOL_TYPE_ == 4
+typedef Eigen::CholmodSupernodalLLT<spMat> cholSolver;
+#endif
 
 namespace DDG
 {
@@ -112,7 +123,7 @@ namespace DDG
       spMat Laplacian;
       // Laplacian sprase matrix of the mesh
 
-      cholSolver LapSolver;
+      cholSolver negLapSolver;
       // cholmode solver based on SuiteSparse
       
       void indexElements( void );
