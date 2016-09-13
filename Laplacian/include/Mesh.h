@@ -55,12 +55,12 @@
 #include <Eigen/CholmodSupport>
 typedef Eigen::SparseMatrix<double> spMat;
 
-#define _CHOL_TYPE_ 1
+#define _CHOL_TYPE_ 3
 
 #if _CHOL_TYPE_ == 1
 typedef Eigen::SparseLU<spMat> cholSolver;
 #elif _CHOL_TYPE_ == 2
-typedef Eigen::SimplicialCholeskyLLT<spMat> cholSolver;
+typedef Eigen::SimplicialLLT<spMat> cholSolver;
 #elif _CHOL_TYPE_ == 3
 typedef Eigen::CholmodSimplicialLLT<spMat> cholSolver;
 #elif _CHOL_TYPE_ == 4

@@ -93,7 +93,7 @@ namespace DDG
     void Mesh::soomthMesh(double h)
     {
         Mat Pos(vertices.size(), 3);
-        Mat deltaPos(vertices.size(), 3);
+        Mat newPos(vertices.size(), 3);
 
         /* assign value to Pos */
         for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
@@ -108,21 +108,27 @@ namespace DDG
          * */
         buildLaplacian();
 
-        Vec A(vertices.size());  /* area of mesh */
+        spMat A;  /* area of mesh */
+        std::vector<T> area;
+        area.reserve(vertices.size());
         for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
         {
-           A(v->index) = v->area();
+           area.push_back( T(v->index, v->index, v->area()) );
         }
+        A.resize(vertices.size(), vertices.size());
+        A.setFromTriplets(area.begin(), area.end());
 
         /* curvature flow */
-        deltaPos = h * Laplacian * Pos;
+        cholSolver solver;
+        solver.compute(A - h*Laplacian);
+        newPos = solver.solve(A*Pos);
 
         /* assign value to Pos */
         for (VertexIter v = vertices.begin(); v != vertices.end(); v++)
         {
-            v->position[0] += deltaPos(v->index, 0) / A( v->index );
-            v->position[1] += deltaPos(v->index, 1) / A( v->index );
-            v->position[2] += deltaPos(v->index, 2) / A( v->index );
+            v->position[0] = newPos(v->index, 0);
+            v->position[1] = newPos(v->index, 1);
+            v->position[2] = newPos(v->index, 2);
         }
 
         printf("Assigned new position to vertices.\n");

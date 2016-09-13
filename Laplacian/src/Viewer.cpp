@@ -221,9 +221,9 @@ namespace DDG
 
    void Viewer :: mProcess( void )
    {
-      mesh.solveScalarPoissonProblem();
-      calcPotentialColor(mesh);
-      // mesh.soomthMesh(0.001);
+      // mesh.solveScalarPoissonProblem();
+      // calcPotentialColor(mesh);
+      mesh.soomthMesh(0.001);
       updateDisplayList();
    }
    
