@@ -223,6 +223,7 @@ namespace DDG
    {
       mesh.solveScalarPoissonProblem();
       calcPotentialColor(mesh);
+      // mesh.soomthMesh(0.001);
       updateDisplayList();
    }
    

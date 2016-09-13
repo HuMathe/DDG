@@ -102,6 +102,9 @@ namespace DDG
 
       /* solve the scalar poisson problem on mesh */
       void solveScalarPoissonProblem( void );
+
+      /* calculate a step forward to soomth mesh according to curvature flow */
+      void soomthMesh(double h);
       
    protected:
       std::string inputFilename;

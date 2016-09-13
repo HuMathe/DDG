@@ -7,6 +7,7 @@
 #include "Mesh.h"
 
 typedef Eigen::VectorXd Vec;
+typedef Eigen::MatrixXd Mat;
 typedef Eigen::Triplet<double> T;
 
 namespace DDG
@@ -25,7 +26,7 @@ namespace DDG
 
         for (HalfEdgeCIter he = halfedges.begin(); he != halfedges.end(); he++)
         {
-            if ( he->onBoundary ) continue;
+            if ( he->onBoundary ) {continue;}
 
             int origin = he->vertex->index;
             int target = he->next->vertex->index;
@@ -39,6 +40,10 @@ namespace DDG
 
         /* assigin value to Laplacian */
         Laplacian.setFromTriplets(tripletlist.begin(), tripletlist.end());
+        /* NOTE: here what we get is the operator d*d rather than *d*d, namely a 2-form.
+         * The reason comes from the symmetry of this matrix, and the computation of many 
+         * quantities ask for *(*d*d)= d*d 
+         * */
 
         /* construct solver */
         this->LapSolver.compute(Laplacian);
@@ -53,22 +58,22 @@ namespace DDG
     {
        Vec rho(vertices.size());
        Vec phi(vertices.size());
-
-       double A = 0;
+       Vec A(vertices.size());  /* area of mesh */
+       
        for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
        {
-           rho( v->index ) = v->rho * v->area();
-           A += v->area();
+           rho( v->index ) = v->rho;
+           A  ( v->index ) = v->area();
        }
        
-       /* normalize rho */
-       double rho_m = rho.sum() / A;
-       for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
-       {
-           rho( v->index ) -= rho_m * v->area();
-       }
+       /* make integration of rho on mesh to be 0 */
+       rho = rho - ( rho.dot(A) / A.sum() ) * Vec::Ones(rho.size());
 
-       phi = LapSolver.solve(rho);
+       // debug use
+       printf("normed rho: max: %f, min: %f\n", rho.maxCoeff(), rho.minCoeff());
+
+       /* solve for 2-form of d*d rho */
+       phi = LapSolver.solve( (rho.array() * A.array()).matrix());
 
        if (LapSolver.info() != Eigen::Success)
        {
@@ -78,7 +83,47 @@ namespace DDG
 
        for (VertexIter v = vertices.begin(); v != vertices.end(); v++)
        {
-           v->phi = phi(v->index);
+           v->phi = phi( v->index ); 
        }
+    }
+
+
+    /* calculate a step forward to soomth mesh according to curvature flow */
+    void Mesh::soomthMesh(double h)
+    {
+        Mat Pos(vertices.size(), 3);
+        Mat deltaPos(vertices.size(), 3);
+
+        /* assign value to Pos */
+        for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
+        {
+            Pos(v->index, 0) = v->position[0];
+            Pos(v->index, 1) = v->position[1];
+            Pos(v->index, 2) = v->position[2];
+        }
+
+        /* at each time the location of the vertices are different and thus 
+         * Laplacian should be updated 
+         * */
+        buildLaplacian();
+
+        Vec A(vertices.size());  /* area of mesh */
+        for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
+        {
+           A(v->index) = v->area();
+        }
+
+        /* curvature flow */
+        deltaPos = h * Laplacian * Pos;
+
+        /* assign value to Pos */
+        for (VertexIter v = vertices.begin(); v != vertices.end(); v++)
+        {
+            v->position[0] += deltaPos(v->index, 0) / A( v->index );
+            v->position[1] += deltaPos(v->index, 1) / A( v->index );
+            v->position[2] += deltaPos(v->index, 2) / A( v->index );
+        }
+
+        printf("Assigned new position to vertices.\n");
     }
 }
