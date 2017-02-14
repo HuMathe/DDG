@@ -215,7 +215,7 @@ namespace DDG
    {
       randomAssignRho(mesh);
       calcPotentialColor(mesh);
-      mesh.buildLaplacian();
+      Lap.buildLaplacian(mesh);
       updateDisplayList();
    }
 
@@ -223,7 +223,7 @@ namespace DDG
    {
       // mesh.solveScalarPoissonProblem();
       // calcPotentialColor(mesh);
-      mesh.soomthMesh(0.001);
+      Lap.soomthMesh(mesh, 0.001);
       updateDisplayList();
    }
    

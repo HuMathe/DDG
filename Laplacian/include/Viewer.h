@@ -14,6 +14,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Shader.h"
+#include "Laplacian.h"
 
 namespace DDG
 {
@@ -25,6 +26,9 @@ namespace DDG
       
       static Mesh mesh;
       // surface mesh visualized by Viewer
+      
+      static Laplacian Lap;
+      // mesh laplacian 
       
    protected:
       // init

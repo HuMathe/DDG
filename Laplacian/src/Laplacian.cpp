@@ -5,6 +5,7 @@
 
 #include "Types.h"
 #include "Mesh.h"
+#include "Laplacian.h"
 
 typedef Eigen::VectorXd Vec;
 typedef Eigen::MatrixXd Mat;
@@ -12,19 +13,16 @@ typedef Eigen::Triplet<double> T;
 
 namespace DDG
 {
-    void Mesh :: buildLaplacian( void )
+    void Laplacian :: buildLaplacian( Mesh& mesh )
     // build laplacian matrix of the mesh
     {
-        /* assign index to each element */
-        this->indexElements();
- 
-        Laplacian.resize(vertices.size(), vertices.size());
+        Laplacian.resize(mesh.vertices.size(), mesh.vertices.size());
 
         /* prepare input quene to initialize Laplacian */
         std::vector<T> tripletlist;
-        tripletlist.reserve( 4*halfedges.size() );
+        tripletlist.reserve( 4 * mesh.halfedges.size() );
 
-        for (HalfEdgeCIter he = halfedges.begin(); he != halfedges.end(); he++)
+        for (HalfEdgeCIter he = mesh.halfedges.begin(); he != mesh.halfedges.end(); he++)
         {
             if ( he->onBoundary ) {continue;}
 
@@ -46,21 +44,21 @@ namespace DDG
          * */
 
         /* construct solver */
-        this->negLapSolver.compute( -Laplacian );
+        negLapSolver.compute( -Laplacian );
         if (negLapSolver.info() != Eigen::Success)
         {
             printf("fail to construct solver.\n");
         }
     }
 
-    void Mesh::solveScalarPoissonProblem( void )
+    void Laplacian::solveScalarPoissonProblem( Mesh& mesh )
     /* solve the scalar poisson problem on mesh */
     {
-       Vec rho(vertices.size());
-       Vec phi(vertices.size());
-       Vec A(vertices.size());  /* area of mesh */
+       Vec rho(mesh.vertices.size());
+       Vec phi(mesh.vertices.size());
+       Vec A(mesh.vertices.size());  /* area of mesh */
        
-       for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
+       for (VertexCIter v = mesh.vertices.begin(); v != mesh.vertices.end(); v++)
        {
            rho( v->index ) = v->rho;
            A  ( v->index ) = v->area();
@@ -82,7 +80,7 @@ namespace DDG
            return;
        }
 
-       for (VertexIter v = vertices.begin(); v != vertices.end(); v++)
+       for (VertexIter v = mesh.vertices.begin(); v != mesh.vertices.end(); v++)
        {
            v->phi = phi( v->index ); 
        }
@@ -90,13 +88,13 @@ namespace DDG
 
 
     /* calculate a step forward to soomth mesh according to curvature flow */
-    void Mesh::soomthMesh(double h)
+    void Laplacian::soomthMesh(Mesh& mesh, double h)
     {
-        Mat Pos(vertices.size(), 3);
-        Mat newPos(vertices.size(), 3);
+        Mat Pos(mesh.vertices.size(), 3);
+        Mat newPos(mesh.vertices.size(), 3);
 
         /* assign value to Pos */
-        for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
+        for (VertexCIter v = mesh.vertices.begin(); v != mesh.vertices.end(); v++)
         {
             Pos(v->index, 0) = v->position[0];
             Pos(v->index, 1) = v->position[1];
@@ -106,16 +104,16 @@ namespace DDG
         /* at each time the location of the vertices are different and thus 
          * Laplacian should be updated 
          * */
-        buildLaplacian();
+        buildLaplacian(mesh);
 
         spMat A;  /* area of mesh */
         std::vector<T> area;
-        area.reserve(vertices.size());
-        for (VertexCIter v = vertices.begin(); v != vertices.end(); v++)
+        area.reserve(mesh.vertices.size());
+        for (VertexCIter v = mesh.vertices.begin(); v != mesh.vertices.end(); v++)
         {
            area.push_back( T(v->index, v->index, v->area()) );
         }
-        A.resize(vertices.size(), vertices.size());
+        A.resize(mesh.vertices.size(), mesh.vertices.size());
         A.setFromTriplets(area.begin(), area.end());
 
         /* curvature flow */
@@ -124,7 +122,7 @@ namespace DDG
         newPos = solver.solve(A*Pos);
 
         /* assign value to Pos */
-        for (VertexIter v = vertices.begin(); v != vertices.end(); v++)
+        for (VertexIter v = mesh.vertices.begin(); v != mesh.vertices.end(); v++)
         {
             v->position[0] = newPos(v->index, 0);
             v->position[1] = newPos(v->index, 1);

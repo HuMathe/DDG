@@ -51,21 +51,6 @@
 #include "Face.h"
 #include "SparseMatrix.h"
 
-#include <Eigen/Sparse>
-#include <Eigen/CholmodSupport>
-typedef Eigen::SparseMatrix<double> spMat;
-
-#define _CHOL_TYPE_ 3
-
-#if _CHOL_TYPE_ == 1
-typedef Eigen::SparseLU<spMat> cholSolver;
-#elif _CHOL_TYPE_ == 2
-typedef Eigen::SimplicialLLT<spMat> cholSolver;
-#elif _CHOL_TYPE_ == 3
-typedef Eigen::CholmodSimplicialLLT<spMat> cholSolver;
-#elif _CHOL_TYPE_ == 4
-typedef Eigen::CholmodSupernodalLLT<spMat> cholSolver;
-#endif
 
 namespace DDG
 {
@@ -108,23 +93,8 @@ namespace DDG
       std::vector<Face>     boundaries;
       // storage for mesh elements
       
-      /* build laplacian matrix of the mesh */
-      void buildLaplacian( void );
-
-      /* solve the scalar poisson problem on mesh */
-      void solveScalarPoissonProblem( void );
-
-      /* calculate a step forward to soomth mesh according to curvature flow */
-      void soomthMesh(double h);
-      
    protected:
       std::string inputFilename;
-
-      spMat Laplacian;
-      // Laplacian sprase matrix of the mesh
-
-      cholSolver negLapSolver;
-      // cholmode solver based on SuiteSparse
       
       void indexElements( void );
       // assigns a unique, 0-based index to each mesh element
